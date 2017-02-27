@@ -1,5 +1,9 @@
 class MoviesController < ApplicationController
-
+  @@all_ratings = []
+  @@selected_ratings = []
+  helper_method :ratings
+  helper_method :s_ratings
+      
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -9,20 +13,40 @@ class MoviesController < ApplicationController
     @movie = Movie.find(id) # look up movie by unique ID
     # will render app/views/movies/show.<extension> by default
   end
-
+  
+  def initialize
+    super
+    
+    if @@all_ratings == []
+      Movie.all.each do |movie|
+        @@all_ratings.push(movie.rating)
+      end
+    
+      @@all_ratings = @@all_ratings.uniq
+      @@selected_ratings = @@all_ratings
+    end
+  end
+  
+  def ratings
+    @@all_ratings
+  end
+  
+  def s_ratings
+    @@selected_ratings
+  end
+  
   def index
-    #@movies = Movie.all
-    #@movies = Movie.order(params[:sort] + '' + params[:direction])
-    
-    #@selected_ratings = params[:ratings]
-    @movies = Movie.order(params[:sort])
-    
-    #@selected_ratings.each do |rating|
-    #  @movies.destroy_all(rating: rating)
-    #end
+    if params[:ratings] != nil
+      @@selected_ratings = []
       
+      params[:ratings].each do |key, value|
+        @@selected_ratings.push(key)
+      end
+    elsif request.GET.include? "commit"
+      @@selected_ratings = []
+    end
     
-    #@all_ratings = ['G','PG','PG-13','R']
+    @movies = Movie.where(rating: @@selected_ratings).order(params[:sort])  
     
     if params[:sort] == 'title'
       @title_header = 'hilite'

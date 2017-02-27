@@ -1,4 +1,5 @@
 module ApplicationHelper
+    # Currently not using this method..
     def sortable(column, title = nil)
         title ||= column.titleize
         css_class = (column == sort_column) ? "current # {sort_direction}" : nil
