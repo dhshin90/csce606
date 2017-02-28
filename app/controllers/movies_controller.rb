@@ -1,9 +1,4 @@
 class MoviesController < ApplicationController
-  @@all_ratings = []
-  @@selected_ratings = []
-  helper_method :ratings
-  helper_method :s_ratings
-      
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -14,46 +9,49 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
   
-  def initialize
-    super
+  def index
+    @all_ratings = session[:all_ratings]
     
-    if @@all_ratings == []
+    if @all_ratings == nil
+      @all_ratings = []
+      
       Movie.all.each do |movie|
-        @@all_ratings.push(movie.rating)
+        @all_ratings.push(movie.rating)
       end
     
-      @@all_ratings = @@all_ratings.uniq
-      @@selected_ratings = @@all_ratings
+      @all_ratings = @all_ratings.uniq
+      @selected_ratings = @all_ratings
+      
+      session[:all_ratings] = @all_ratings
+      session[:selected_ratings] = @selected_ratings
     end
-  end
-  
-  def ratings
-    @@all_ratings
-  end
-  
-  def s_ratings
-    @@selected_ratings
-  end
-  
-  def index
+    
+    if params[:sort] == nil
+      params[:sort] = session[:sort]
+    else session[:sort] = params[:sort]
+    end
+    
     if params[:ratings] != nil
-      @@selected_ratings = []
+      @selected_ratings = []
       
       params[:ratings].each do |key, value|
-        @@selected_ratings.push(key)
+        @selected_ratings.push(key)
       end
+      
+      session[:selected_ratings] = @selected_ratings
     elsif request.GET.include? "commit"
-      @@selected_ratings = []
+        @selected_ratings = []
+    else
+        @selected_ratings = session[:selected_ratings]
     end
     
-    @movies = Movie.where(rating: @@selected_ratings).order(params[:sort])  
+    @movies = Movie.where(rating: @selected_ratings).order(params[:sort])  
     
     if params[:sort] == 'title'
       @title_header = 'hilite'
     elsif params[:sort] == 'release_date'
       @release_date_header = 'hilite'
     end
-    
   end
 
   def new
