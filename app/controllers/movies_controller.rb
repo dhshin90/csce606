@@ -39,8 +39,6 @@ class MoviesController < ApplicationController
       end
       
       session[:selected_ratings] = @selected_ratings
-    elsif request.GET.include? "commit"
-        @selected_ratings = []
     else
         @selected_ratings = session[:selected_ratings]
     end
