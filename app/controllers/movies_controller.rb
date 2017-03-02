@@ -28,7 +28,14 @@ class MoviesController < ApplicationController
     
     if params[:sort] == nil
       params[:sort] = session[:sort]
-    else session[:sort] = params[:sort]
+    else 
+      session[:sort] = params[:sort]
+      
+      if params[:sort] == 'title'
+        @title_header = 'hilite'
+      elsif params[:sort] == 'release_date'
+        @release_date_header = 'hilite'
+      end
     end
     
     if params[:ratings] != nil
@@ -44,12 +51,6 @@ class MoviesController < ApplicationController
     end
     
     @movies = Movie.where(rating: @selected_ratings).order(params[:sort])  
-    
-    if params[:sort] == 'title'
-      @title_header = 'hilite'
-    elsif params[:sort] == 'release_date'
-      @release_date_header = 'hilite'
-    end
   end
 
   def new
